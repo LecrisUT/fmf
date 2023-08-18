@@ -10,14 +10,10 @@ from collections.abc import (Generator, ItemsView, Iterator, KeysView,
                              ValuesView)
 from io import open
 from pprint import pformat as pretty
-from typing import TYPE_CHECKING, overload
+# TODO: py3.10: typing.Optional, typing.Union -> '|' operator
+from typing import TYPE_CHECKING, Any, Optional, Union, overload
 
 if TYPE_CHECKING:
-    # TODO: py3.10: typing.Optional, typing.Union -> '|' operator
-    from typing import Any, Optional, Union
-    from ._compat.typing import Self
-    from .typing import T, P, DataType, TreeData, TreeDataPath, JsonSchema
-    from .normalize import Normalizer
     from _typeshed import StrPath
 
 import jsonschema
@@ -29,7 +25,9 @@ import fmf.context
 import fmf.utils as utils
 from fmf.utils import dict_to_yaml, log
 
-from .normalize import normalize
+from ._compat.typing import Self
+from .normalize import Normalizer, normalize
+from .typing import DataType, JsonSchema, P, T, TreeData, TreeDataPath
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  Constants

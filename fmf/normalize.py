@@ -1,11 +1,8 @@
 from types import GenericAlias
-from typing import TYPE_CHECKING
+from typing import Any, Callable, overload
 
-if TYPE_CHECKING:
-    from typing import Any, Callable, overload
-
-    from ._compat.typing import Concatenate, TypeAlias
-    from .typing import ListDataType, NotListDataType, P, T
+from ._compat.typing import Concatenate, TypeAlias
+from .typing import ListDataType, NotListDataType, P, T
 
 Normalizer: TypeAlias = Callable[Concatenate[NotListDataType, P], T]
 

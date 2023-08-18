@@ -12,20 +12,20 @@ import sys
 import time
 import warnings
 from collections.abc import Callable
+from dataclasses import dataclass
 from io import StringIO
 from logging import Logger as _Logger
-from typing import TYPE_CHECKING
+# TODO: py3.10: typing.Optional, typing.Union -> '|' operator
+from typing import TYPE_CHECKING, Any, Optional, Union
+
+from .typing import TreeData
 
 if TYPE_CHECKING:
-    # TODO: py3.10: typing.Optional, typing.Union -> '|' operator
-    from typing import Any, NamedTuple, Optional, Union
-    from .typing import TreeData
+    from .base import Tree
 
 from filelock import FileLock, Timeout
 from ruamel.yaml import YAML, scalarstring
 from ruamel.yaml.comments import CommentedMap
-
-from .base import Tree
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  Constants
@@ -678,6 +678,9 @@ def fetch_tree(url: str, ref: Optional[str] = None, path: str = '.') -> Tree:
 
     Raises GeneralError when lock couldn't be acquired.
     """
+
+    from .base import Tree
+
     # Create lock path to fetch/read git from URL to the cache
     cache_dir = get_cache_directory()
     # Use LOCK_SUFFIX_READ suffix (different from the inner fetch lock)
@@ -890,7 +893,8 @@ def dict_to_yaml(data: TreeData,
 #  Validation
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class JsonSchemaValidationResult(NamedTuple):
+@dataclass
+class JsonSchemaValidationResult:
     """ Represents JSON Schema validation result """
 
     result: bool

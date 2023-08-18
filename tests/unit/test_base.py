@@ -23,7 +23,7 @@ from fmf.cli import cd, main
 PATH = os.path.dirname(os.path.realpath(__file__))
 EXAMPLES = PATH + "/../../examples/"
 SELECT_SOURCE = os.path.join(PATH, "data/select_source")
-FMF_REPO = 'https://github.com/psss/fmf.git'
+FMF_REPO = 'https://github.com/teemtee/fmf.git'
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
