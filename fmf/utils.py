@@ -14,14 +14,18 @@ import warnings
 from collections.abc import Callable
 from io import StringIO
 from logging import Logger as _Logger
-# TODO: py3.10: typing.Optional, typing.Union -> '|' operator
-from typing import Any, NamedTuple, Optional, Union
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # TODO: py3.10: typing.Optional, typing.Union -> '|' operator
+    from typing import Any, NamedTuple, Optional, Union
+    from .typing import TreeData
 
 from filelock import FileLock, Timeout
 from ruamel.yaml import YAML, scalarstring
 from ruamel.yaml.comments import CommentedMap
 
-import fmf.base
+from .base import Tree
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  Constants
@@ -217,8 +221,8 @@ def info(message: str, newline: bool = True) -> None:
 #  Filtering
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def evaluate(expression: str, data: fmf.base.TreeData,
-             _node: Optional[fmf.base.Tree] = None) -> Any:
+def evaluate(expression: str, data: TreeData,
+             _node: Optional[Tree] = None) -> Any:
     """
     Evaluate arbitrary Python expression against given data
 
@@ -234,7 +238,7 @@ def evaluate(expression: str, data: fmf.base.TreeData,
         raise FilterError(f"Internal key is not defined: {error}")
 
 
-def filter(filter: str, data: fmf.base.TreeData,
+def filter(filter: str, data: TreeData,
            sensitive: bool = True, regexp: bool = False) -> bool:
     """
     Return true if provided filter matches given dictionary of values
@@ -346,7 +350,7 @@ def filter(filter: str, data: fmf.base.TreeData,
     # Turn all data into lowercase if sensitivity is off
     if not sensitive:
         filter = filter.lower()
-        lowered: fmf.base.TreeData = {}
+        lowered: TreeData = {}
         for key, values in data_copy.items():
             assert isinstance(values, list) and all(isinstance(value, str) for value in values)
             lowered[key.lower()] = [value.lower() for value in values]  # type: ignore
@@ -659,7 +663,7 @@ def invalidate_cache():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-def fetch_tree(url: str, ref: Optional[str] = None, path: str = '.') -> fmf.base.Tree:
+def fetch_tree(url: str, ref: Optional[str] = None, path: str = '.') -> Tree:
     """
     Get initialized Tree from a remote git repository
 
@@ -686,7 +690,7 @@ def fetch_tree(url: str, ref: Optional[str] = None, path: str = '.') -> fmf.base
                 lock_file.write(str(os.getpid()))
             repository = fetch_repo(url, ref)
             root = os.path.join(repository, path)
-            return fmf.base.Tree(root)
+            return Tree(root)
     except Timeout:
         raise GeneralError(
             f"Failed to acquire lock for {lock_path} within {NODE_LOCK_TIMEOUT} seconds")
@@ -853,7 +857,7 @@ log = Logging('fmf').logger
 #  Convert dict to yaml
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def dict_to_yaml(data: fmf.base.TreeData,
+def dict_to_yaml(data: TreeData,
                  width: Optional[int] = None,
                  sort: bool = False) -> str:
     """ Convert dictionary into yaml """
