@@ -6,17 +6,16 @@ import copy
 import os
 import re
 import subprocess
-import sys
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterator
 from io import open
 from pprint import pformat as pretty
-# TODO: py3.10: typing.Optional, typing.Union -> '|' operator
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, overload
 
-if sys.version_info >= (3, 10):
-    from typing import TypeAlias
-else:
-    from typing_extensions import TypeAlias
+if TYPE_CHECKING:
+    # TODO: py3.10: typing.Optional, typing.Union -> '|' operator
+    from typing import Any, Optional, Union
+    from .typing import T, P, DataType, TreeData, TreeDataPath, JsonSchema
+    from .normalize import Normalizer
 
 import jsonschema
 from ruamel.yaml import YAML
@@ -27,6 +26,8 @@ import fmf.context
 import fmf.utils as utils
 from fmf.utils import dict_to_yaml, log
 
+from .normalize import normalize
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  Constants
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -34,17 +35,6 @@ from fmf.utils import dict_to_yaml, log
 SUFFIX = ".fmf"
 MAIN = "main" + SUFFIX
 IGNORED_DIRECTORIES = ['/dev', '/proc', '/sys']
-
-# TypeHints
-RawDataType: TypeAlias = Union[None, int, float, str, bool]
-ListDataType: TypeAlias = list[Union[RawDataType, 'ListDataType', 'DictDataType']]
-DictDataType: TypeAlias = dict[str, Union[RawDataType, ListDataType, 'DictDataType']]
-# Equivalent to:
-# JSON: TypeAlias = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None
-DataType: TypeAlias = Union[RawDataType, ListDataType, DictDataType]
-TreeData: TypeAlias = dict[str, DataType]
-TreeDataPath: TypeAlias = Union[TreeData, str]  # Either TreeData or path
-JsonSchema: TypeAlias = Mapping[str, Any]
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -481,6 +471,34 @@ class Tree:
         except KeyError:
             return default
         return data
+
+    @overload
+    def normalize(self, cls: type[T], name: str, *args: P.args,  # type: ignore
+                  normalizer: Normalizer[P, T], default_data: DataType = None,
+                  **kwargs: P.kwargs) -> T:
+        ...
+
+    @overload
+    def normalize(self, cls: type[T], name: str, *args: Any,
+                  default_data: DataType = None, **kwargs: Any) -> T:
+        ...
+
+    @overload
+    def normalize(self, cls: type[list[T]], name: str, *args: P.args,  # type: ignore
+                  normalizer: Normalizer[P, T], default_data: DataType = None,
+                  **kwargs: P.kwargs) -> list[T]:
+        ...
+
+    @overload
+    def normalize(self, cls: type[list[T]], name: str, *args: Any,  # type: ignore
+                  default_data: DataType = None, **kwargs: Any) -> list[T]:
+        ...
+
+    def normalize(self, cls, name, *args, default_data=None, normalizer=None, **kwargs):
+        return normalize(cls,
+                         self.get(name, default=default_data), *args,
+                         normalizer=normalizer,
+                         **kwargs)
 
     def child(self, name: str, data: Optional[TreeDataPath],
               source: Optional[str] = None) -> None:
