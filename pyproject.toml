@@ -31,7 +31,7 @@ dependencies = [
     'ruamel.yaml',
     'filelock',
     'jsonschema',
-    'typing-extensions ; python_version<"3.10"',
+    'typing-extensions ; python_version<"3.11"',
     'click',
     'click-option-group',
 ]
