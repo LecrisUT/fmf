@@ -41,6 +41,9 @@ rst2man man.rst > fmf.1
 
 
 %install
+%if 0%{?el9}
+export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_FMF="%{version}"
+%endif
 %pyproject_install
 %pyproject_save_files fmf
 
